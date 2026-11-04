@@ -1,0 +1,20 @@
+# Compilados y empaquetado
+target/
+dist/
+*.zip
+
+# Datos generados al ejecutar (BD embebida)
+data/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+nbproject/
+
+# Sistema
+.DS_Store
+Thumbs.db
