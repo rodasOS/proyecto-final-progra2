@@ -1,3 +1,6 @@
 package videoclub.ui;
 
-interface Refrescable { void refrescar(); }
+/** Pantalla que puede recargar sus datos cuando el usuario la abre. */
+interface Refrescable {
+    void refrescar();
+}

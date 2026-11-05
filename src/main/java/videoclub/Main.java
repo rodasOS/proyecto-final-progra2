@@ -3,11 +3,15 @@ package videoclub;
 import videoclub.db.Database;
 import videoclub.ui.MainFrame;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
+/** Punto de entrada: prepara la base de datos y abre la ventana principal. */
 public class Main {
+
     public static void main(String[] args) {
-        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignored) { }
+        usarAspectoDelSistema();
         try {
             Database.iniciar();
         } catch (Exception e) {
@@ -18,5 +22,13 @@ public class Main {
         }
         Runtime.getRuntime().addShutdownHook(new Thread(Database::detener));
         SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
+    }
+
+    private static void usarAspectoDelSistema() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            // Si no se puede, se usa el aspecto por defecto de Swing.
+        }
     }
 }

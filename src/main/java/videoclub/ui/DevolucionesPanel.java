@@ -1,45 +1,61 @@
 package videoclub.ui;
 
 import videoclub.dao.PrestamoDao;
+import videoclub.db.NegocioException;
 import videoclub.model.Prestamo;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import java.awt.BorderLayout;
 
+/** Pantalla para consultar un prestamo por su codigo y registrar su devolucion. */
 class DevolucionesPanel extends JPanel implements Refrescable {
     private final PrestamoDao dao = new PrestamoDao();
-    private final JTextField codigo = new JTextField(10);
-    private final JLabel detalle = new JLabel(" ");
+    private final JTextField campoCodigo = new JTextField(10);
+    private final JLabel etiquetaDetalle = new JLabel(" ");
 
     DevolucionesPanel() {
-        super(new FlowLayout(FlowLayout.LEFT, 12, 12));
+        super(new BorderLayout(0, 12));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        JPanel col = new JPanel();
-        col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
-        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        fila.add(new JLabel("Codigo de prestamo:")); fila.add(codigo);
-        fila.add(Ui.boton("Consultar", this::consultar));
-        fila.add(Ui.boton("Registrar devolucion", this::devolver));
-        col.add(fila); col.add(detalle);
-        add(col);
+        add(Ui.barra(
+            new JLabel("Código de préstamo:"),
+            campoCodigo,
+            Ui.boton("Consultar", this::consultar),
+            Ui.boton("Registrar devolución", this::devolver)), BorderLayout.NORTH);
+        add(etiquetaDetalle, BorderLayout.CENTER);
     }
 
     private void consultar() {
         try {
-            Prestamo p = dao.buscar(Ui.entero("Codigo de prestamo", codigo.getText()))
-                .orElseThrow(() -> new videoclub.db.NegocioException("No existe ese prestamo."));
-            detalle.setText("Pelicula " + p.codigoPelicula() + " | Cliente " + p.codigoCliente()
-                + " | Prestado " + p.fechaPrestamo() + " | Estado " + p.estado());
-        } catch (Exception e) { detalle.setText(" "); Ui.error(this, e); }
+            Prestamo p = buscarPrestamo();
+            etiquetaDetalle.setText("Película " + p.codigoPelicula() + " | Cliente " + p.codigoCliente()
+                + " | Prestado el " + p.fechaPrestamo() + " | Estado " + p.estado());
+        } catch (NegocioException e) {
+            etiquetaDetalle.setText(" ");
+            Ui.mostrarError(this, e);
+        }
     }
 
     private void devolver() {
         try {
-            dao.devolver(Ui.entero("Codigo de prestamo", codigo.getText()));
-            Ui.info(this, "Devolucion registrada.");
+            dao.devolver(Ui.enteroDe("Código de préstamo", campoCodigo.getText()));
+            Ui.mostrarInfo(this, "Devolución registrada.");
             consultar();
-        } catch (Exception e) { Ui.error(this, e); }
+        } catch (NegocioException e) {
+            Ui.mostrarError(this, e);
+        }
     }
 
-    @Override public void refrescar() { }
+    private Prestamo buscarPrestamo() throws NegocioException {
+        int codigo = Ui.enteroDe("Código de préstamo", campoCodigo.getText());
+        return dao.buscar(codigo).orElseThrow(() -> new NegocioException("No existe ese préstamo."));
+    }
+
+    /** No hay datos que recargar: el usuario consulta por codigo. */
+    @Override
+    public void refrescar() {
+        // Intencionalmente vacio.
+    }
 }

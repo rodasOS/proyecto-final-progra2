@@ -2,43 +2,57 @@ package videoclub.ui;
 
 import videoclub.db.Database;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 
+/** Ventana principal: encabezado, una pestana por seccion y barra de estado. */
 public class MainFrame extends JFrame {
+    private static final String TITULO = "Videoclub - Control de películas, clientes y préstamos";
+
     public MainFrame() {
-        super("Videoclub - Control de peliculas, clientes y prestamos");
+        super(TITULO);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 640);
         setLocationRelativeTo(null);
-
-        JLabel titulo = new JLabel("  VIDEOCLUB", SwingConstants.LEFT);
-        titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 22f));
-        titulo.setForeground(Color.WHITE);
-        titulo.setOpaque(true); titulo.setBackground(Ui.PRIMARIO);
-        titulo.setBorder(BorderFactory.createEmptyBorder(12, 8, 12, 8));
-
-        PeliculasPanel peliculas = new PeliculasPanel();
-        ClientesPanel clientes = new ClientesPanel();
-        PrestamosPanel prestamos = new PrestamosPanel();
-        DevolucionesPanel devoluciones = new DevolucionesPanel();
-
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Peliculas", peliculas);
-        tabs.addTab("Clientes", clientes);
-        tabs.addTab("Prestamos", prestamos);
-        tabs.addTab("Devoluciones", devoluciones);
-        tabs.addChangeListener(e -> {
-            Component c = tabs.getSelectedComponent();
-            if (c instanceof Refrescable r) r.refrescar();
-        });
-
-        JLabel estado = new JLabel("  Base de datos: " + Database.motor());
-        estado.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-
         setLayout(new BorderLayout());
-        add(titulo, BorderLayout.NORTH);
-        add(tabs, BorderLayout.CENTER);
-        add(estado, BorderLayout.SOUTH);
+        add(crearEncabezado(), BorderLayout.NORTH);
+        add(crearPestanas(), BorderLayout.CENTER);
+        add(crearBarraDeEstado(), BorderLayout.SOUTH);
+    }
+
+    private static JLabel crearEncabezado() {
+        JLabel encabezado = new JLabel("  VIDEOCLUB", SwingConstants.LEFT);
+        encabezado.setFont(encabezado.getFont().deriveFont(Font.BOLD, 22f));
+        encabezado.setForeground(Color.WHITE);
+        encabezado.setOpaque(true);
+        encabezado.setBackground(Ui.COLOR_PRIMARIO);
+        encabezado.setBorder(BorderFactory.createEmptyBorder(12, 8, 12, 8));
+        return encabezado;
+    }
+
+    private static JTabbedPane crearPestanas() {
+        JTabbedPane pestanas = new JTabbedPane();
+        pestanas.addTab("Películas", new PeliculasPanel());
+        pestanas.addTab("Clientes", new ClientesPanel());
+        pestanas.addTab("Préstamos", new PrestamosPanel());
+        pestanas.addTab("Devoluciones", new DevolucionesPanel());
+        pestanas.addChangeListener(evento -> {
+            if (pestanas.getSelectedComponent() instanceof Refrescable pantalla) {
+                pantalla.refrescar();
+            }
+        });
+        return pestanas;
+    }
+
+    private static JLabel crearBarraDeEstado() {
+        JLabel barra = new JLabel("  Base de datos: " + Database.motor());
+        barra.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        return barra;
     }
 }
