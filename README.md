@@ -18,9 +18,28 @@ Si no aparece o es menor que 17, instala **Temurin 17+** desde https://adoptium.
 Descomprime `ProyectoFinal.zip` en una carpeta (de preferencia sin tildes ni espacios en la ruta).
 
 ### 1. Windows
+
+Para que `ejecutar.bat` funcione, la carpeta debe contener **`app.jar`** junto al `.bat`. El JAR no viene en el repositorio (es un archivo generado), así que tienes dos opciones:
+
+**Opción A: descargar el zip ya armado (recomendada)**
+1. Ve a la sección *Releases* del repositorio en GitHub y descarga `ProyectoFinal.zip`.
+2. Descomprímelo. Dentro debe verse `app.jar` al lado de `ejecutar.bat`.
+
+**Opción B: compilar tú mismo**
+1. Instala **JDK 17+** (https://adoptium.net) y **Maven** (https://maven.apache.org/download.cgi, descomprime y agrega su carpeta `bin` al PATH).
+2. Abre PowerShell en la carpeta del proyecto y ejecuta:
+   ```
+   mvn package
+   copy target\app.jar .
+   ```
+3. Ahora `app.jar` está junto a `ejecutar.bat`.
+
+**Ejecutar**
 1. Haz doble clic en **`ejecutar.bat`**.
 2. Si Windows muestra "Windows protegió su PC", pulsa *Más información* → *Ejecutar de todas formas*.
-3. Alternativa en CMD, dentro de la carpeta: `java -jar app.jar`
+3. Alternativa en CMD o PowerShell, dentro de la carpeta: `java -jar app.jar`
+
+Si ves `Error: Unable to access jarfile app.jar`, significa que `app.jar` no está en esa carpeta. Revisa el paso anterior.
 
 ### 2. Linux (Fedora, Ubuntu, etc.)
 ```bash
