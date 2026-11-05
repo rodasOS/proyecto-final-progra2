@@ -10,6 +10,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.Color;
 import java.awt.Component;
@@ -93,9 +95,22 @@ final class Ui {
         tabla.setRowHeight(ALTO_FILA);
         tabla.setAutoCreateRowSorter(true);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.getTableHeader().setBackground(COLOR_PRIMARIO);
-        tabla.getTableHeader().setForeground(Color.WHITE);
+        tabla.getTableHeader().setDefaultRenderer(crearRenderizadorEncabezado());
         return tabla;
+    }
+
+    /**
+     * Pinta el encabezado con colores propios. Windows ignora setBackground/setForeground
+     * del JTableHeader y dibuja el texto blanco sobre fondo claro, por eso no se veia.
+     */
+    private static DefaultTableCellRenderer crearRenderizadorEncabezado() {
+        DefaultTableCellRenderer renderizador = new DefaultTableCellRenderer();
+        renderizador.setOpaque(true);
+        renderizador.setBackground(COLOR_PRIMARIO);
+        renderizador.setForeground(Color.WHITE);
+        renderizador.setHorizontalAlignment(SwingConstants.LEFT);
+        renderizador.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        return renderizador;
     }
 
     /** Margen interior uniforme para los paneles principales. */
