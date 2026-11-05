@@ -4,61 +4,123 @@ import videoclub.db.Database;
 import videoclub.db.NegocioException;
 import videoclub.model.Cliente;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+/** Acceso a la tabla de clientes. */
 public class ClienteDao {
-    public void insertar(Cliente c) throws NegocioException {
-        validar(c);
-        try (Connection cn = Database.conectar()) {
-            try (PreparedStatement q = cn.prepareStatement("SELECT 1 FROM cliente WHERE codigo=?")) {
-                q.setString(1, c.codigo());
-                try (ResultSet rs = q.executeQuery()) { if (rs.next()) throw new NegocioException("Ya existe un cliente con codigo " + c.codigo()); }
+    private static final String REGEX_EMAIL = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+    private static final String REGEX_TELEFONO = "^[0-9+\\-\\s()]{6,20}$";
+
+    private static final String SQL_INSERTAR =
+        "INSERT INTO cliente (codigo, nombre, direccion, telefono, email, estado) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String SQL_ACTUALIZAR =
+        "UPDATE cliente SET nombre = ?, direccion = ?, telefono = ?, email = ?, estado = ? WHERE codigo = ?";
+    private static final String SQL_BUSCAR = "SELECT * FROM cliente WHERE codigo = ?";
+    private static final String SQL_LISTAR =
+        "SELECT * FROM cliente WHERE codigo LIKE ? OR nombre LIKE ? OR email LIKE ? ORDER BY nombre";
+    private static final String SQL_EXISTE = "SELECT 1 FROM cliente WHERE codigo = ?";
+
+    public void insertar(Cliente cliente) throws NegocioException {
+        validar(cliente);
+        try (Connection c = Database.conectar()) {
+            if (existe(c, cliente.codigo())) {
+                throw new NegocioException("Ya existe un cliente con código " + cliente.codigo() + ".");
             }
-            try (PreparedStatement ps = cn.prepareStatement("INSERT INTO cliente VALUES (?,?,?,?,?,?)")) {
-                ps.setString(1, c.codigo()); ps.setString(2, c.nombre()); ps.setString(3, c.direccion());
-                ps.setString(4, c.telefono()); ps.setString(5, c.email()); ps.setString(6, c.estado());
+            try (PreparedStatement ps = c.prepareStatement(SQL_INSERTAR)) {
+                ps.setString(1, cliente.codigo());
+                ps.setString(2, cliente.nombre());
+                ps.setString(3, cliente.direccion());
+                ps.setString(4, cliente.telefono());
+                ps.setString(5, cliente.email());
+                ps.setString(6, cliente.estado());
                 ps.executeUpdate();
             }
-        } catch (SQLException e) { throw new NegocioException("Error de base de datos: " + e.getMessage(), e); }
+        } catch (SQLException e) {
+            throw NegocioException.deBaseDeDatos(e);
+        }
     }
 
-    public void actualizar(Cliente c) throws NegocioException {
-        validar(c);
-        String sql = "UPDATE cliente SET nombre=?,direccion=?,telefono=?,email=?,estado=? WHERE codigo=?";
-        try (Connection cn = Database.conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setString(1, c.nombre()); ps.setString(2, c.direccion()); ps.setString(3, c.telefono());
-            ps.setString(4, c.email()); ps.setString(5, c.estado()); ps.setString(6, c.codigo());
-            if (ps.executeUpdate() == 0) throw new NegocioException("No existe el cliente " + c.codigo());
-        } catch (SQLException e) { throw new NegocioException("Error de base de datos: " + e.getMessage(), e); }
+    public void actualizar(Cliente cliente) throws NegocioException {
+        validar(cliente);
+        try (Connection c = Database.conectar(); PreparedStatement ps = c.prepareStatement(SQL_ACTUALIZAR)) {
+            ps.setString(1, cliente.nombre());
+            ps.setString(2, cliente.direccion());
+            ps.setString(3, cliente.telefono());
+            ps.setString(4, cliente.email());
+            ps.setString(5, cliente.estado());
+            ps.setString(6, cliente.codigo());
+            if (ps.executeUpdate() == 0) {
+                throw new NegocioException("No existe el cliente " + cliente.codigo() + ".");
+            }
+        } catch (SQLException e) {
+            throw NegocioException.deBaseDeDatos(e);
+        }
     }
 
     public Optional<Cliente> buscar(String codigo) throws NegocioException {
-        try (Connection cn = Database.conectar(); PreparedStatement ps = cn.prepareStatement("SELECT * FROM cliente WHERE codigo=?")) {
+        try (Connection c = Database.conectar(); PreparedStatement ps = c.prepareStatement(SQL_BUSCAR)) {
             ps.setString(1, codigo);
-            try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(map(rs)) : Optional.empty(); }
-        } catch (SQLException e) { throw new NegocioException("Error de base de datos: " + e.getMessage(), e); }
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw NegocioException.deBaseDeDatos(e);
+        }
     }
 
+    /** Busca por codigo, nombre o email. Un filtro vacio devuelve todos. */
     public List<Cliente> listar(String filtro) throws NegocioException {
-        String sql = "SELECT * FROM cliente WHERE codigo LIKE ? OR nombre LIKE ? OR email LIKE ? ORDER BY nombre";
-        try (Connection cn = Database.conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
-            String f = "%" + (filtro == null ? "" : filtro.trim()) + "%";
-            for (int i = 1; i <= 3; i++) ps.setString(i, f);
-            List<Cliente> r = new ArrayList<>();
-            try (ResultSet rs = ps.executeQuery()) { while (rs.next()) r.add(map(rs)); }
-            return r;
-        } catch (SQLException e) { throw new NegocioException("Error de base de datos: " + e.getMessage(), e); }
+        String patron = "%" + (filtro == null ? "" : filtro.trim()) + "%";
+        try (Connection c = Database.conectar(); PreparedStatement ps = c.prepareStatement(SQL_LISTAR)) {
+            for (int i = 1; i <= 3; i++) {
+                ps.setString(i, patron);
+            }
+            List<Cliente> clientes = new ArrayList<>();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    clientes.add(mapear(rs));
+                }
+            }
+            return clientes;
+        } catch (SQLException e) {
+            throw NegocioException.deBaseDeDatos(e);
+        }
     }
 
-    private void validar(Cliente c) throws NegocioException {
-        if (c.codigo().isBlank() || c.nombre().isBlank()) throw new NegocioException("Codigo y nombre son obligatorios.");
-        if (!c.email().isBlank() && !c.email().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) throw new NegocioException("El email no es valido.");
-        if (!c.telefono().isBlank() && !c.telefono().matches("^[0-9+\\-\\s()]{6,20}$")) throw new NegocioException("El telefono no es valido.");
+    private boolean existe(Connection c, String codigo) throws SQLException {
+        try (PreparedStatement ps = c.prepareStatement(SQL_EXISTE)) {
+            ps.setString(1, codigo);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
     }
 
-    private Cliente map(ResultSet rs) throws SQLException {
-        return new Cliente(rs.getString("codigo"), rs.getString("nombre"), rs.getString("direccion"),
-            rs.getString("telefono"), rs.getString("email"), rs.getString("estado"));
+    private static void validar(Cliente cliente) throws NegocioException {
+        if (cliente.codigo().isBlank() || cliente.nombre().isBlank()) {
+            throw new NegocioException("Código y nombre son obligatorios.");
+        }
+        if (!cliente.email().isBlank() && !cliente.email().matches(REGEX_EMAIL)) {
+            throw new NegocioException("El email no es válido.");
+        }
+        if (!cliente.telefono().isBlank() && !cliente.telefono().matches(REGEX_TELEFONO)) {
+            throw new NegocioException("El teléfono no es válido.");
+        }
+    }
+
+    private static Cliente mapear(ResultSet rs) throws SQLException {
+        return new Cliente(
+            rs.getString("codigo"),
+            rs.getString("nombre"),
+            rs.getString("direccion"),
+            rs.getString("telefono"),
+            rs.getString("email"),
+            rs.getString("estado"));
     }
 }
