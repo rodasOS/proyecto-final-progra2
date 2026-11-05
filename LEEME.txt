@@ -9,8 +9,10 @@ COMO EJECUTAR
   Cualquiera: java -jar app.jar
 
 BASE DE DATOS
-  La app usa MySQL externo si se escribe mysql.url en config.properties
-  (ej. jdbc:mysql://localhost:3306/videoclub?createDatabaseIfNotExist=true).
-  Si no, usa una base embebida (H2 en modo MySQL) guardada en data/.
+  La app arranca sola su propia base de datos (carpeta data/). Orden de intento:
+  1) MySQL externo, si se escribe mysql.url en config.properties
+     (ej. jdbc:mysql://localhost:3306/videoclub?createDatabaseIfNotExist=true)
+  2) MariaDB embebida (compatible MySQL)
+  3) H2 en modo MySQL (respaldo)
   El motor en uso se muestra en la barra inferior de la ventana.
   El script sql/schema.sql permite crear las tablas manualmente en MySQL.

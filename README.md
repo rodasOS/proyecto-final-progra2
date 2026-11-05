@@ -47,6 +47,11 @@ chmod +x ejecutar.sh
 ./ejecutar.sh
 ```
 - Alternativa: `java -jar app.jar`
+- **Fedora:** si el motor MariaDB embebido no arranca por la librería `libcrypt.so.1`, instala:
+  ```bash
+  sudo dnf install libxcrypt-compat
+  ```
+  Sin ella la aplicación sigue funcionando con el motor de respaldo (H2).
 
 ### 3. macOS
 1. Abre Terminal en la carpeta y ejecuta una sola vez: `chmod +x ejecutar.command ejecutar.sh`
@@ -56,23 +61,24 @@ chmod +x ejecutar.sh
 
 ## Base de datos
 
-El motor en uso aparece en la **barra inferior** de la ventana. La aplicación usa:
+El motor en uso aparece en la **barra inferior** de la ventana. La aplicación prueba, en orden:
 
-1. **MySQL externo**, si `mysql.url` está escrito en `config.properties`. Si no conecta, cae al paso 2.
-2. **H2 en modo MySQL**, la base embebida que viene incluida. No necesita instalar nada.
+1. **MySQL externo**, si se escribe `mysql.url` en `config.properties`.
+2. **MariaDB embebida** (compatible con MySQL).
+3. **H2 en modo MySQL** (respaldo).
 
 Los datos se guardan en la carpeta `data/`, junto al programa.
 
 ### Usar un MySQL real
-1. Edita `config.properties`:
+1. Crea las tablas con `sql/schema.sql` (o deja que la app las cree).
+2. Edita `config.properties`:
    ```properties
    modo=mysql
    mysql.url=jdbc:mysql://localhost:3306/videoclub?createDatabaseIfNotExist=true
    mysql.usuario=root
    mysql.clave=TU_CLAVE
    ```
-2. Vuelve a ejecutar la aplicación. Con `modo=mysql`, si no conecta se muestra el error en vez de usar H2.
-3. Para crear las tablas a mano, usa `sql/schema.sql`. La app también las crea sola al iniciar.
+3. Vuelve a ejecutar la aplicación.
 
 ## Funcionalidad
 - **Películas:** código, título, año, duración, clasificación, actores, director y ejemplares. Insertar, modificar y consultar.
@@ -91,5 +97,5 @@ mvn package        # genera target/app.jar
 | Problema | Solución |
 |---|---|
 | `java` no se reconoce como comando | Instala Java 17+ y reabre la terminal. |
+| La ventana tarda en abrir la primera vez | Normal: extrae y arranca la base de datos embebida. |
 | Error al iniciar la base de datos | Mueve la carpeta a una ruta sin tildes ni espacios y borra la carpeta `data/`. |
-| Los datos desaparecen entre ejecuciones | Ejecuta desde la carpeta del programa: los datos se guardan en `data/` junto a `app.jar`. |
