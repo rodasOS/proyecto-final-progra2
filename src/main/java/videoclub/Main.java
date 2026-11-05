@@ -16,7 +16,6 @@ public class Main {
                 "Error fatal", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(Database::detener));
         SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
     }
 }
