@@ -1,6 +1,7 @@
 package videoclub;
 
 import videoclub.db.Database;
+import videoclub.ui.CaratulaDialog;
 import videoclub.ui.MainFrame;
 
 import javax.swing.JOptionPane;
@@ -21,7 +22,14 @@ public class Main {
             System.exit(1);
         }
         Runtime.getRuntime().addShutdownHook(new Thread(Database::detener));
-        SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
+        SwingUtilities.invokeLater(Main::mostrarVentanaPrincipal);
+    }
+
+    /** Abre la ventana principal y, encima, la caratula modal del proyecto. */
+    private static void mostrarVentanaPrincipal() {
+        MainFrame ventana = new MainFrame();
+        ventana.setVisible(true);
+        new CaratulaDialog(ventana).setVisible(true);
     }
 
     private static void usarAspectoDelSistema() {
