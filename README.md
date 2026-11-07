@@ -1,101 +1,125 @@
 # Videoclub – Proyecto Final Programación II
 
-Sistema en **Java + Swing** para controlar películas, clientes y préstamos, conectado a una base de datos compatible con MySQL.
-La base de datos viene incluida: no hay que instalar ni configurar nada más que Java.
+Sistema de escritorio en **Java + Swing** para controlar una colección de películas, los clientes y los préstamos.
+La base de datos viene incluida: no hace falta instalar MySQL ni configurar nada para probarlo.
 
-## Requisito único: Java 17 o superior
+| | |
+|---|---|
+| **Universidad** | Universidad Mariano Gálvez de Guatemala |
+| **Facultad** | Ingeniería en Sistemas |
+| **Curso** | Programación II |
 
-Comprueba la versión abriendo una terminal (o CMD / PowerShell) y escribiendo:
+| Integrante | Carné |
+|---|---|
+| Mario Orlando Sales Rodas | 2990-25-21488 |
+| Edgar Aldanis Chávez Estrada | 2990-25-19528 |
+| Kenneth Gabriel Elias Xia Temal | 2990-25-16687 |
+| Erick Adolfo de León Rivera | 2990-25-13618 |
 
-```
-java -version
-```
+## Capturas
 
-Si no aparece o es menor que 17, instala **Temurin 17+** desde https://adoptium.net
+Carátula, que se muestra modal al iniciar la aplicación:
 
-## Cómo ejecutar
+![Carátula](docs/img/caratula.png)
 
-Descomprime `ProyectoFinal.zip` en una carpeta (de preferencia sin tildes ni espacios en la ruta).
+| Películas | Clientes |
+|---|---|
+| ![Películas](docs/img/peliculas.png) | ![Clientes](docs/img/clientes.png) |
 
-### 1. Windows
+| Préstamos | Devoluciones |
+|---|---|
+| ![Préstamos](docs/img/prestamos.png) | ![Devoluciones](docs/img/devoluciones.png) |
 
-Para que `ejecutar.bat` funcione, la carpeta debe contener **`app.jar`** junto al `.bat`. El JAR no viene en el repositorio (es un archivo generado), así que tienes dos opciones:
+## Requisitos
 
-**Opción A: descargar el zip ya armado (recomendada)**
-1. Ve a la sección *Releases* del repositorio en GitHub y descarga `ProyectoFinal.zip`.
-2. Descomprímelo. Dentro debe verse `app.jar` al lado de `ejecutar.bat`.
-
-**Opción B: compilar tú mismo**
-1. Instala **JDK 17+** (https://adoptium.net) y **Maven** (https://maven.apache.org/download.cgi, descomprime y agrega su carpeta `bin` al PATH).
-2. Abre PowerShell en la carpeta del proyecto y ejecuta:
-   ```
-   mvn package
-   copy target\app.jar .
-   ```
-3. Ahora `app.jar` está junto a `ejecutar.bat`.
-
-**Ejecutar**
-1. Haz doble clic en **`ejecutar.bat`**.
-2. Si Windows muestra "Windows protegió su PC", pulsa *Más información* → *Ejecutar de todas formas*.
-3. Alternativa en CMD o PowerShell, dentro de la carpeta: `java -jar app.jar`
-
-Si ves `Error: Unable to access jarfile app.jar`, significa que `app.jar` no está en esa carpeta. Revisa el paso anterior.
-
-### 2. Linux (Fedora, Ubuntu, etc.)
-```bash
-chmod +x ejecutar.sh
-./ejecutar.sh
-```
-- Alternativa: `java -jar app.jar`
-- **Fedora:** si el motor MariaDB embebido no arranca por la librería `libcrypt.so.1`, instala:
-  ```bash
-  sudo dnf install libxcrypt-compat
+- **Java JDK 17 o superior.** Para comprobarlo, abre una terminal (o CMD / PowerShell) y escribe:
   ```
-  Sin ella la aplicación sigue funcionando con el motor de respaldo (H2).
+  java -version
+  ```
+  Si no aparece o la versión es menor que 17, descárgalo de [adoptium.net](https://adoptium.net) (Temurin).
+- **Apache NetBeans** (cualquier versión reciente). Incluye Maven, así que no hay que instalarlo aparte.
+- **Internet** solo la primera vez, para que NetBeans descargue las librerías del proyecto.
 
-### 3. macOS
-1. Abre Terminal en la carpeta y ejecuta una sola vez: `chmod +x ejecutar.command ejecutar.sh`
-2. Haz doble clic en **`ejecutar.command`**.
-3. Si macOS lo bloquea: clic derecho sobre el archivo → *Abrir* → *Abrir*.
-4. Alternativa en Terminal: `java -jar app.jar`
+## Cómo ejecutar (con NetBeans)
+
+1. **Extrae** el proyecto en una carpeta. Se recomienda una ruta sin tildes ni espacios, por ejemplo `C:\Proyectos\videoclub`.
+2. Abre **Apache NetBeans** y ve a **File → Open Project**.
+3. Selecciona la carpeta **`videoclub`** (la que contiene el archivo `pom.xml`) y pulsa **Open Project**.
+
+   ![Open Project](docs/img/netbeans-open-project.png)
+
+4. Espera a que NetBeans termine de compilar y descargar las librerías (se ve en la parte inferior, en *Output*).
+5. Haz clic derecho sobre el proyecto y elige **Run**, o usa el botón verde **Run Project** de la barra superior.
+6. Si NetBeans pregunta la clase principal (*Select Main Class*), elige **`videoclub.Main`** y pulsa **Select Main Class**. Solo se pide una vez por sesión.
+7. Aparece la **carátula**. Pulsa **Continuar** para entrar al sistema.
+
+> **Aviso de Firewall de Windows:** al ejecutar puede aparecer un aviso de *Seguridad de Windows* sobre `mysqld`. Puedes elegir **Cancelar**: el sistema funciona con la base de datos H2 que viene incluida.
+
+![Aviso de Firewall](docs/img/netbeans-aviso-firewall.png)
+
+### Ejecutar desde la terminal (opcional)
+
+Con JDK 17+ y Maven instalados:
+
+```
+mvn package
+java -jar target/app.jar
+```
+
+Hay que ejecutarlo desde la carpeta del proyecto, porque ahí se crea la carpeta `data/`.
+
+## Uso del sistema
+
+El sistema tiene cuatro pestañas:
+
+- **Películas:** registrar, modificar y consultar películas (código, título, año, duración, clasificación, actores, director y ejemplares).
+- **Clientes:** registrar, modificar y consultar clientes, con estado *Activo* o *Inactivo*.
+- **Préstamos:** registrar un préstamo de una película a un cliente activo. Si no quedan ejemplares disponibles, el sistema lo avisa.
+- **Devoluciones:** consultar un préstamo por su código y registrar su devolución.
+
+En la barra inferior de la ventana aparece el motor de base de datos que está en uso.
+Los datos se guardan en la carpeta `data/` dentro del proyecto, así que se conservan entre ejecuciones.
 
 ## Base de datos
 
-El motor en uso aparece en la **barra inferior** de la ventana. La aplicación prueba, en orden:
+Por defecto el sistema usa **H2 en modo MySQL**, una base embebida que no requiere instalación.
 
-1. **MySQL externo**, si se escribe `mysql.url` en `config.properties`.
-2. **MariaDB embebida** (compatible con MySQL).
-3. **H2 en modo MySQL** (respaldo).
+Para usar un servidor **MySQL** propio, edita `config.properties`:
 
-Los datos se guardan en la carpeta `data/`, junto al programa.
-
-### Usar un MySQL real
-1. Crea las tablas con `sql/schema.sql` (o deja que la app las cree).
-2. Edita `config.properties`:
-   ```properties
-   modo=mysql
-   mysql.url=jdbc:mysql://localhost:3306/videoclub?createDatabaseIfNotExist=true
-   mysql.usuario=root
-   mysql.clave=TU_CLAVE
-   ```
-3. Vuelve a ejecutar la aplicación.
-
-## Funcionalidad
-- **Películas:** código, título, año, duración, clasificación, actores, director y ejemplares. Insertar, modificar y consultar.
-- **Clientes:** insertar, modificar y consultar, con estado Activo/Inactivo.
-- **Préstamos:** se registran con estado `A`. Si no quedan ejemplares disponibles se lanza una excepción con el aviso correspondiente.
-- **Devoluciones:** se consulta el código de préstamo y se registra la fecha de devolución y el estado `I`.
-
-## Compilar desde el código fuente
-Requiere JDK 17+ y Maven:
-```bash
-mvn package        # genera target/app.jar
-./empaquetar.sh    # genera ProyectoFinal.zip
+```properties
+modo=mysql
+mysql.url=jdbc:mysql://localhost:3306/videoclub?createDatabaseIfNotExist=true
+mysql.usuario=root
+mysql.clave=TU_CLAVE
 ```
 
-## Solución de problemas
+- `modo=auto` (valor por defecto): usa MySQL si `mysql.url` está escrito; si no conecta, usa la base embebida.
+- `modo=mysql`: exige MySQL; si no conecta, muestra el error.
+- `modo=embebida`: usa siempre la base embebida.
+
+Las tablas se crean solas al iniciar, a partir de `src/main/resources/schema.sql`.
+
+## Problemas comunes
+
 | Problema | Solución |
 |---|---|
-| `java` no se reconoce como comando | Instala Java 17+ y reabre la terminal. |
-| La ventana tarda en abrir la primera vez | Normal: extrae y arranca la base de datos embebida. |
-| Error al iniciar la base de datos | Mueve la carpeta a una ruta sin tildes ni espacios y borra la carpeta `data/`. |
+| NetBeans dice que falta Java o pide una plataforma | *Tools → Java Platforms*: agrega un JDK 17 o superior y vuelve a abrir el proyecto. |
+| No se descargan las librerías | Verifica la conexión a internet y haz clic derecho en el proyecto → **Clean and Build**. |
+| Error al iniciar la base de datos | Mueve la carpeta del proyecto a una ruta sin tildes ni espacios y vuelve a ejecutar. |
+| Los datos desaparecen entre ejecuciones | Ejecuta desde la carpeta del proyecto: los datos se guardan en `data/`. |
+
+## Estructura del proyecto
+
+```
+videoclub/
+├── pom.xml                    Configuración Maven (NetBeans la lee directamente)
+├── config.properties          Configuración de la base de datos
+└── src/main/
+    ├── java/videoclub/
+    │   ├── Main.java          Punto de entrada
+    │   ├── db/                Conexión y excepciones
+    │   ├── model/             Películas, clientes, préstamos y estados
+    │   ├── dao/               Acceso a datos y reglas de negocio
+    │   └── ui/                Ventanas y pestañas (Swing)
+    └── resources/             Esquema SQL y logo
+```
